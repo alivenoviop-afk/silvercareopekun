@@ -633,7 +633,15 @@ function bind() {
   try {
     $('gFamily').value = state.family;
     $('gFamily').addEventListener('input', function () {
-      try { state.family = $('gFamily').value.trim(); persist(); showLinksAuto(); } catch (e) {}
+      try {
+        var nv = $('gFamily').value.trim();
+        if (nv && nv !== state.family) {
+          state.meds = []; state.journal = []; state.seen = [];
+          state.v = 0;
+          try { save(K_DEL, '[]'); } catch (e) {}
+        }
+        state.family = nv; persist(); showLinksAuto();
+      } catch (e) {}
     });
     var gn = $('gNew');
     if (gn) gn.onclick = function () {
@@ -829,7 +837,18 @@ function themeNext() {
 }
 function init() {
   try {
-    try { if (LOCKED_FAMILY) { state.family = LOCKED_FAMILY; persist(); } } catch (e) {}
+    try { // смена семьи = стерильно: старое не тащим в новый ящик
+      var prevFam = load(K_F, '');
+      if (LOCKED_FAMILY) {
+        if (prevFam && prevFam !== LOCKED_FAMILY) {
+          state.meds = []; state.journal = []; state.seen = [];
+          state.v = 0;
+          try { save(K_DEL, '[]'); } catch (e) {}
+        }
+        state.family = LOCKED_FAMILY;
+        persist();
+      }
+    } catch (e) {}
     bind(); renderList(); renderJournal(); showLinksAuto(); recUi();
     try { if ($('fTime') && !$('fTime').value) $('fTime').value = '08:00'; } catch (e) {}
     try { if (load(K_SOS, '') === '1') startSosMode(); } catch (e) {} // SOS не снят кнопкой — продолжаем орать
