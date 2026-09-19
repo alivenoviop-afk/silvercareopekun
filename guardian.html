@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<script>try{if(localStorage.getItem('guardian_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<meta name="theme-color" content="#2563eb">
+<meta name="description" content="SilverCare — кабинет опекуна: лекарства, голос, ссылки, журнал.">
+<title>SilverCare — Опекун</title>
+<link rel="manifest" href="manifest-guardian.json">
+<link rel="stylesheet" href="guardian.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <h1>👵 SilverCare — Опекун</h1>
+    <button id="gTheme" type="button" class="btn ghost" aria-label="Переключить тему">🌙</button>
+  </header>
+
+  <section class="card">
+    <details open>
+      <summary>📺 Проверка за 1 минуту (жми — свернётся)</summary>
+      <ol class="steps">
+        <li>Введи код семьи ниже — ссылка и QR появятся <b>сами</b>.</li>
+        <li>Добавь таблетку: название → кнопка <b>+1 мин</b> → Добавить. Увидишь «Отправила сама ✅».</li>
+        <li>Открой ссылку из раздела 3 на втором телефоне → <b>ВКЛЮЧИТЬ ЗВУК</b>.</li>
+        <li>Через минуту второй телефон заорёт → жми <b>Я ВЫПИЛ!</b></li>
+        <li>Здесь в разделе 4 → <b>Проверить сейчас</b> → зелёная строка ✅. Всё связано.</li>
+        <li>Telegram: отправь боту код семьи текстом → он ответит «Подключил ✅» и будет слать ✅/⚠️/🆘.</li>
+      </ol>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>1. Семья</h2>
+    <label>Код семьи (цифры-секрет)
+      <input id="gFamily" placeholder="7392-x7K2" autocomplete="off">
+    </label>
+    <div class="row">
+      <button id="gCheck" type="button" class="btn ghost">Проверить связь</button>
+    </div>
+    <details class="settings">
+      <summary>⚙️ Настройки</summary>
+      <label>Телефон бабушки (для кнопки ПОЗВОНИТЬ при SOS)
+        <input id="gPhone" type="tel" placeholder="+79150000000" autocomplete="off">
+      </label>
+      <button id="gNew" type="button" class="btn ghost small-link">＋ другая семья</button>
+      <div id="mvpPanel" hidden>
+        <div class="mvp-title">Одна семья в MVP</div>
+        <div class="mvp-text">В MVP — одна семья на всех устройствах. Мульти-аккаунт (несколько бабушек и опекунов с разграничением доступа) в рамки MVP не входит — разработаем в следующей версии.<br><br>Сейчас держим код <b id="mvpCode">…</b>.</div>
+        <button id="mvpOk" type="button" class="btn primary">Понятно</button>
+      </div>
+    </details>
+    <div id="gFamStatus" class="status" aria-live="polite"></div>
+    <div id="gDiag" class="status"></div>
+  </section>
+
+  <section class="card">
+    <h2>2. Лекарства <span id="gVer" class="ver">v0</span></h2>
+    <div class="row">
+      <button id="gPull" type="button" class="btn ghost">⬇ Подтянуть с телефона (если добавлял бот)</button>
+    </div>
+    <ul id="gList" class="meds"></ul>
+    <div class="form">
+      <label>Название <input id="fName" placeholder="Давление" maxlength="60"></label>
+      <label>Время — выбери на часах, клавиатура не нужна
+        <input id="fTime" type="time" value="08:00" required>
+      </label>
+      <div class="row" id="tQuick">
+        <button type="button" class="btn ghost" data-t="now">Сейчас</button>
+        <button type="button" class="btn ghost" data-t="+1">+1 мин (тест)</button>
+        <button type="button" class="btn ghost" data-t="08:00">08:00</button>
+        <button type="button" class="btn ghost" data-t="13:00">13:00</button>
+        <button type="button" class="btn ghost" data-t="18:00">18:00</button>
+        <button type="button" class="btn ghost" data-t="21:00">21:00</button>
+      </div>
+      <div class="days" id="fDays" aria-label="Дни приёма">
+        <span class="days-cap">Дни:</span>
+        <button type="button" data-d="all" class="on">Каждый день</button>
+        <button type="button" data-d="1" class="on">Пн</button>
+        <button type="button" data-d="2" class="on">Вт</button>
+        <button type="button" data-d="3" class="on">Ср</button>
+        <button type="button" data-d="4" class="on">Чт</button>
+        <button type="button" data-d="5" class="on">Пт</button>
+        <button type="button" data-d="6" class="on">Сб</button>
+        <button type="button" data-d="0" class="on">Вс</button>
+      </div>
+      <div class="row2">
+        <label>Что делаем
+          <select id="fKind">
+            <option value="pill">💊 Таблетка</option>
+            <option value="inhal">🌬️ Ингаляция</option>
+            <option value="gargle">🗣️ Полоскание горла</option>
+            <option value="custom">✏️ Своё</option>
+          </select>
+        </label>
+        <label>Сколько
+          <select id="fQty">
+            <option>0.5</option>
+            <option selected>1</option>
+            <option>2</option>
+            <option>3</option>
+          </select>
+        </label>
+      </div>
+      <div class="row2">
+        <label>Единица
+          <select id="fUnit">
+            <option value="штука">штука</option>
+            <option value="флакон">флакон</option>
+            <option value="стаканчик">мерный стаканчик</option>
+            <option value="капля">капля</option>
+            <option value="ложка">ложка</option>
+            <option value="вдох">вдох</option>
+          </select>
+        </label>
+        <label>Цвет (для таблеток)
+          <select id="fColor">
+            <option value="blue">🔵 Синяя</option>
+            <option value="red">🔴 Красная</option>
+            <option value="yellow">🟡 Жёлтая</option>
+            <option value="white">⚪ Белая</option>
+          </select>
+        </label>
+      </div>
+      <label id="fCustomWrap" hidden>Своя фраза (как напишешь — так и озвучит)
+        <input id="fCustom" placeholder="Время закапать нос!" maxlength="80">
+      </label>
+      <div class="row">
+        <button id="vPreview" type="button" class="btn ghost">▶ Как услышит бабушка</button>
+      </div>
+      <div class="voice">
+        <div class="row">
+          <button id="vRec" type="button" class="btn danger">🎤 Записать (до 7 сек)</button>
+          <button id="vStop" type="button" class="btn ghost" disabled>⏹ Стоп</button>
+          <button id="vPlay" type="button" class="btn ghost" disabled>▶ Слушать</button>
+          <button id="vRe" type="button" class="btn ghost" disabled>↺ Перезаписать</button>
+        </div>
+        <div id="vStatus" class="status" aria-live="polite">Голоса пока нет.</div>
+      </div>
+      <button id="gAdd" type="button" class="btn primary">Добавить в список</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>3. Генератор ссылок для бабушки</h2>
+    <div id="gPubStatus" class="status" aria-live="polite">Добавьте лекарство — отправлю само, ссылки обновятся сами.</div>
+    <div class="gen-block">
+      <div class="gen-cap">📱 Короткая ссылка (интернет нужен 1 раз)</div>
+      <div id="gShortBox" class="links" aria-live="polite"></div>
+      <button id="gCopyShort" type="button" class="btn primary">📋 Скопировать короткую</button>
+    </div>
+    <div class="gen-block">
+      <div class="gen-cap">📦 Полная ссылка (пакет внутри, работает офлайн)</div>
+      <div id="gFullBox" class="links" aria-live="polite"></div>
+      <button id="gCopyFull" type="button" class="btn ghost">📋 Скопировать полную</button>
+    </div>
+    <div class="row">
+      <button id="gQrBtn" type="button" class="btn ghost">🔳 Показать QR</button>
+      <button id="gSendNow" type="button" class="btn primary">📤 Отправить сейчас</button>
+      <button id="gDemo" type="button" class="btn ghost">🧪 Тест: аларм через минуту</button>
+    </div>
+    <div id="gQrBox" class="qr"></div>
+  </section>
+
+  <section class="card">
+    <h2>4. Журнал с телефона <span id="gAlive" class="ver">связь: ?</span></h2>
+    <div class="counters">
+      <div class="cnt ok">Принято: <b id="cTaken">0</b></div>
+      <div class="cnt bad">Пропусков: <b id="cMissed">0</b></div>
+      <div class="cnt warn">SOS: <b id="cSos">0</b></div>
+      <button id="gPoll" type="button" class="btn ghost">🔄 Проверить сейчас</button>
+      <button id="gTest" type="button" class="btn ghost">🔔 Проверить звук</button>
+    </div>
+    <div id="gWatch" class="watch" hidden></div>
+    <div id="gSosMode" class="sosmode" hidden>
+      <div class="sos-title">🆘 SOS ОТ БАБУШКИ!</div>
+      <a id="gCallBtn" class="btn primary bigcall" href="tel:">📞 ПОЗВОНИТЬ</a>
+      <div id="gNoPhone" class="hint">Номер не задан — вбей телефон бабушки в разделе 1.</div>
+      <button id="gSosAck" type="button" class="btn ghost">Я ПРИНЯЛ — ТИХО</button>
+    </div>
+    <details id="jWrap">
+      <summary>📜 Журнал событий (<span id="jCount">0</span>)</summary>
+      <ul id="gJournal" class="journal"></ul>
+    </details>
+  </section>
+</main>
+<script src="guardian.js"></script>
+</body>
+</html>
