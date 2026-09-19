@@ -10,7 +10,7 @@ function load(k, fb) { try { var v = localStorage.getItem(k); return v === null 
 function save(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 function loadJ(k) { try { return JSON.parse(localStorage.getItem(k) || ''); } catch (e) { return null; } }
 
-var LOCKED_FAMILY = '6092-4nhl'; // зафиксированный код: держим только его
+var LOCKED_FAMILY = '5814-k7q2'; // зафиксированный код: держим только его
 var K_F = 'guardian_family', K_V = 'guardian_v', K_M = 'guardian_meds',
     K_T = 'guardian_token', K_S = 'guardian_site', K_J = 'guardian_journal', K_SEEN = 'guardian_seen', K_PUB = 'guardian_pub', K_PH = 'guardian_phone', K_SOS = 'guardian_sos', K_DEL = 'guardian_del';
 var VOICE_LIMIT = 90 * 1024;
