@@ -355,7 +355,7 @@ async function mergeDown() {
     } catch (e) {}
     var byId = {};
     (best.meds || []).forEach(function (m) { try { if (m && m.id && del.indexOf(m.id) === -1) byId[m.id] = m; } catch (e) {} });
-    state.meds.forEach(function (m) { try { if (m && m.id) byId[m.id] = m; } catch (e) {} });
+    state.meds.forEach(function (m) { try { if (m && m.id && del.indexOf(m.id) === -1) byId[m.id] = m; } catch (e) {} });
     var merged = Object.keys(byId).map(function (k) { return byId[k]; });
     var rv = parseInt(best.v || 0, 10) || 0;
     if (merged.length !== state.meds.length || rv >= state.v) {
@@ -798,9 +798,13 @@ function bind() {
           } catch (e) {}
         });
         if (!best) { say($('gPubStatus'), 'В ящике пусто.'); return; }
-        state.meds = best.meds || [];
+        try { // могилки объединяем, а не сбрасываем — иначе подтяжка воскрешает удалённое
+          var dl0 = loadJ(K_DEL) || [];
+          (best.del || []).forEach(function (id) { try { if (id && dl0.indexOf(id) === -1) dl0.push(id); } catch (e) {} });
+          save(K_DEL, JSON.stringify(dl0.slice(-200)));
+          state.meds = (best.meds || []).filter(function (m) { try { return m && m.id && dl0.indexOf(m.id) === -1; } catch (e) { return true; } });
+        } catch (e) { state.meds = best.meds || []; }
         state.v = parseInt(best.v || 0, 10) || 0;
-        try { save(K_DEL, JSON.stringify((best.del || []).slice(-200))); } catch (e) {}
         try { save(K_PUB, String(state.v)); } catch (e) {}
         persist(); renderList(); showLinksAuto();
         say($('gPubStatus'), 'Подтянул ✅ v' + state.v + ': ' + state.meds.length + ' шт.');
