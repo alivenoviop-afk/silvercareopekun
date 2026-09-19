@@ -108,7 +108,7 @@ function downUrl() { return NTFY_BASE + '/silvercare-' + encodeURIComponent(stat
 function upUrl() { return NTFY_BASE + '/silvercare-' + encodeURIComponent(state.family) + '-up'; }
 function packet() {
   try {
-    return { family: state.family, v: state.v, updatedAt: new Date().toISOString(), meds: state.meds, settings: {} };
+    return { family: state.family, v: state.v, updatedAt: new Date().toISOString(), meds: state.meds, settings: {}, del: loadJ(K_DEL) || [] };
   } catch (e) { return { family: '', v: 0, meds: [], settings: {} }; }
 }
 function shortLink() { try { return site() + '/old.html#family=' + state.family; } catch (e) { return ''; } }
@@ -348,6 +348,11 @@ async function mergeDown() {
     });
     if (!best) return;
     var del = loadJ(K_DEL) || [];
+    try { // чужие могилки тоже наши
+      var rd = best.del || [], chg = false;
+      rd.forEach(function (id) { try { if (id && del.indexOf(id) === -1) { del.push(id); chg = true; } } catch (e) {} });
+      if (chg) save(K_DEL, JSON.stringify(del.slice(-200)));
+    } catch (e) {}
     var byId = {};
     (best.meds || []).forEach(function (m) { try { if (m && m.id && del.indexOf(m.id) === -1) byId[m.id] = m; } catch (e) {} });
     state.meds.forEach(function (m) { try { if (m && m.id) byId[m.id] = m; } catch (e) {} });
@@ -787,7 +792,7 @@ function bind() {
         if (!best) { say($('gPubStatus'), 'В ящике пусто.'); return; }
         state.meds = best.meds || [];
         state.v = parseInt(best.v || 0, 10) || 0;
-        try { save(K_DEL, '[]'); } catch (e) {}
+        try { save(K_DEL, JSON.stringify((best.del || []).slice(-200))); } catch (e) {}
         try { save(K_PUB, String(state.v)); } catch (e) {}
         persist(); renderList(); showLinksAuto();
         say($('gPubStatus'), 'Подтянул ✅ v' + state.v + ': ' + state.meds.length + ' шт.');
