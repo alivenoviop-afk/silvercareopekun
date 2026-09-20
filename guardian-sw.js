@@ -1,6 +1,6 @@
 /* SilverCare Опекун — офлайн-оболочка + клик по шторке возвращает на страницу.
    МЕНЯЙ ВЕРСИЮ при любом изменении оболочки, иначе залёживается кэш! */
-var CACHE = 'guardian-v4';
+var CACHE = 'guardian-v5';
 var SHELL = ['guardian.html', 'guardian.css', 'guardian.js', 'manifest-guardian.json'];
 
 self.addEventListener('install', function (e) {
@@ -28,6 +28,8 @@ self.addEventListener('activate', function (e) {
 self.addEventListener('fetch', function (e) {
   try {
     var url = e.request.url || '';
+    if (e.request.method !== 'GET') return;
+    if (url.indexOf('trycloudflare.com') !== -1) return;
     if (url.indexOf('ntfy.sh') !== -1 || url.indexOf('catbox.moe') !== -1) return; // сеть как есть
     e.respondWith(
       caches.match(e.request).then(function (hit) {
