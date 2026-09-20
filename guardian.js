@@ -103,7 +103,7 @@ function site() {
   } catch (e) { return 'https://BABA-XXX.workers.dev'; }
 }
 /* Ящик: ntfy.sh общий или свой (Deck+туннель). Меняется ОДНОЙ строкой */
-var NTFY_BASE = 'https://advice-apache-suspension-portion.trycloudflare.com';
+var NTFY_BASE = 'https://continuous-lasting-cho-sheer.trycloudflare.com';
 function downUrl() { return NTFY_BASE + '/silvercare-' + encodeURIComponent(state.family) + '-down'; }
 function upUrl() { return NTFY_BASE + '/silvercare-' + encodeURIComponent(state.family) + '-up'; }
 function packet() {
