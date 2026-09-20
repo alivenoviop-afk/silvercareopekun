@@ -368,7 +368,7 @@ async function mergeDown() {
 async function publish(silent) {
   try {
     if (!state.family) { say($('gPubStatus'), 'Сначала введите код семьи.'); return false; }
-    if (!state.meds.length) { say($('gPubStatus'), 'Список пуст.'); return false; }
+    if (!state.meds.length && !(loadJ(K_DEL) || []).length) { say($('gPubStatus'), 'Список пуст.'); return false; }
     try { await mergeDown(); } catch (e) {}
     state.v += 1;
     var ok = false;
