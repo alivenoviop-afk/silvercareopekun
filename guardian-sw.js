@@ -1,6 +1,6 @@
 /* SilverCare Опекун — офлайн-оболочка + клик по шторке возвращает на страницу.
    МЕНЯЙ ВЕРСИЮ при любом изменении оболочки, иначе залёживается кэш! */
-var CACHE = 'guardian-v3';
+var CACHE = 'guardian-v4';
 var SHELL = ['guardian.html', 'guardian.css', 'guardian.js', 'manifest-guardian.json'];
 
 self.addEventListener('install', function (e) {
